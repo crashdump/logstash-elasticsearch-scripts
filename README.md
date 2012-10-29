@@ -3,6 +3,9 @@ logstash-elasticsearch-scripts
 
 Management scripts for Logstash over ES
 
+ * logstash_index_optimize.py : Optimizing logstash indexes newer than n days.
+ * logstash_index_cleaner.py : Delete logstash indexes older than n days.
+
 
 logstash_index_optimize.py
 --------------------------
@@ -55,7 +58,7 @@ optional arguments:
 logstash_index_optimize.py
 --------------------------
 
-Delete the indexes older that argv. Ex:
+Delete the indexes older than argv. Ex:
 
 ```
 $ ./logstash_index_cleaner.py -d 365
