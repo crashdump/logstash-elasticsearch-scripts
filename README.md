@@ -55,7 +55,7 @@ optional arguments:
                         Elasticsearch indices.
 ```
 
-logstash_index_optimize.py
+logstash_index_cleaner.py
 --------------------------
 
 Delete the indexes older than argv. Ex:
