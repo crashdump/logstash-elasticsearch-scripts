@@ -99,3 +99,7 @@ optional arguments:
                         Elasticsearch indices.
 ```
 
+Alternatives
+--------------------------
+
+- [elasticsearch curator](https://github.com/elasticsearch/curator)
