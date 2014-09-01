@@ -148,8 +148,8 @@ def main():
         else:
             print 'Error deleting index: {0}. ({1})'.format(index_name, deletion)
 
-    print ''
     if not arguments.changes_only: 
+        print ''
         print 'Done in {0}.'.format(timedelta(seconds=time.time()-start))
 
 
