@@ -72,7 +72,7 @@ def find_indices_to_optimize(connection, days_to_optimize=None, hours_to_optimiz
     days_cutoff = utc_now_time - days_to_optimize * 24 * 60 * 60 if days_to_optimize is not None else None
     hours_cutoff = utc_now_time - hours_to_optimize * 60 * 60 if hours_to_optimize is not None else None
 
-    for index_name in sorted(set(connection.get_indices().keys())):
+    for index_name in sorted(set(connection.indices.get_indices().keys())):
         if not index_name.startswith(prefix):
             print >> out, 'Skipping index due to missing prefix {0}: {1}'.format(prefix, index_name)
             continue
