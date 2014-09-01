@@ -42,6 +42,7 @@ def make_parser():
 
     parser.add_argument('-H', '--hours-to-keep', action='store', help='Number of hours to keep.', type=int)
     parser.add_argument('-d', '--days-to-keep', action='store', help='Number of days to keep.', type=int)
+    parser.add_argument('-c', '--changes-only', action='quiet', help='Output only changes(or attempted).', default=False)
 
     parser.add_argument('-n', '--dry-run', action='store_true', help='If true, does not perform any changes to the Elasticsearch indices.', default=False)
 
@@ -61,7 +62,7 @@ def get_index_epoch(index_timestamp, separator='.'):
     return time.mktime([int(part) for part in year_month_day_optionalhour] + [0,0,0,0,0])
 
 
-def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr):
+def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr, changes_only):
     """ Generator that yields expired indices.
 
     :return: Yields tuples on the format ``(index_name, expired_by)`` where index_name
@@ -74,8 +75,9 @@ def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, sepa
 
     for index_name in sorted(set(connection.indices.get_indices().keys())):
         if not index_name.startswith(prefix):
-            print >> out, 'Skipping index due to missing prefix {0}: {1}'.format(prefix, index_name)
-            continue
+            if not changes_only:
+                print >> out, 'Skipping index due to missing prefix {0}: {1}'.format(prefix, index_name)
+                continue
 
         unprefixed_index_name = index_name[len(prefix):]
 
@@ -105,7 +107,7 @@ def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, sepa
         if index_epoch < cutoff:
             yield index_name, cutoff-index_epoch
 
-        else:
+        elif not changes_only:
             print >> out, '{0} is {1} above the cutoff.'.format(index_name, timedelta(seconds=index_epoch-cutoff))
 
 
@@ -129,7 +131,7 @@ def main():
 
     print ''
 
-    for index_name, expired_by in find_expired_indices(connection, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix):
+    for index_name, expired_by in find_expired_indices(connection, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix, arguments.changes):
         expiration = timedelta(seconds=expired_by)
 
         if arguments.dry_run:
