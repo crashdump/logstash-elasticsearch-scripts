@@ -129,8 +129,8 @@ def main():
             print 'Deleting daily indices older than {0} days.'.format(arguments.days_to_keep)
         if arguments.hours_to_keep:
             print 'Deleting hourly indices older than {0} hours.'.format(arguments.hours_to_keep)
+        print ''
 
-    print ''
 
     for index_name, expired_by in find_expired_indices(connection, arguments.changes_only, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix):
         expiration = timedelta(seconds=expired_by)
