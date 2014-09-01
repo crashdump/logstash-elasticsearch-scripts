@@ -124,10 +124,11 @@ def main():
 
     connection = pyes.ES('{0}:{1}'.format(arguments.host, arguments.port), timeout=arguments.timeout)
 
-    if arguments.days_to_keep:
-        print 'Deleting daily indices older than {0} days.'.format(arguments.days_to_keep)
-    if arguments.hours_to_keep:
-        print 'Deleting hourly indices older than {0} hours.'.format(arguments.hours_to_keep)
+    if not arguments.changes_only: 
+        if arguments.days_to_keep:
+            print 'Deleting daily indices older than {0} days.'.format(arguments.days_to_keep)
+        if arguments.hours_to_keep:
+            print 'Deleting hourly indices older than {0} hours.'.format(arguments.hours_to_keep)
 
     print ''
 
