@@ -138,7 +138,7 @@ def main():
 
         print 'Optimizing index {0} because it is {1} newer than cutoff.'.format(index_name, abs(expiration))
 
-        optimization = connection.optimize(index_name)
+        optimization = connection.indices.optimize(index_name)
         # ES returns a dict on the format {u'acknowledged': True, u'ok': True} on success.
         if optimization.get('ok'):
             print 'Successfully optimized index: {0}'.format(index_name)
