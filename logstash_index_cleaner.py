@@ -42,7 +42,7 @@ def make_parser():
 
     parser.add_argument('-H', '--hours-to-keep', action='store', help='Number of hours to keep.', type=int)
     parser.add_argument('-d', '--days-to-keep', action='store', help='Number of days to keep.', type=int)
-    parser.add_argument('-c', '--changes-only', action='quiet', help='Output only changes(or attempted).', default=False)
+    parser.add_argument('-c', '--changes-only', action='store_true', help='If true, output only changes(or attempted).', default=False)
 
     parser.add_argument('-n', '--dry-run', action='store_true', help='If true, does not perform any changes to the Elasticsearch indices.', default=False)
 
@@ -62,7 +62,7 @@ def get_index_epoch(index_timestamp, separator='.'):
     return time.mktime([int(part) for part in year_month_day_optionalhour] + [0,0,0,0,0])
 
 
-def find_expired_indices(connection, changes_only, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr):
+def find_expired_indices(connection, changes_only, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr,):
     """ Generator that yields expired indices.
 
     :return: Yields tuples on the format ``(index_name, expired_by)`` where index_name
@@ -131,8 +131,7 @@ def main():
 
     print ''
 
-    for index_name, expired_by in find_expired_indices(connection, arguments.changes, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix):
-
+    for index_name, expired_by in find_expired_indices(connection, arguments.changes_only, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix):
         expiration = timedelta(seconds=expired_by)
 
         if arguments.dry_run:
