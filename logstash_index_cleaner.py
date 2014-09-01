@@ -149,7 +149,8 @@ def main():
             print 'Error deleting index: {0}. ({1})'.format(index_name, deletion)
 
     print ''
-    print 'Done in {0}.'.format(timedelta(seconds=time.time()-start))
+    if not arguments.changes_only: 
+        print 'Done in {0}.'.format(timedelta(seconds=time.time()-start))
 
 
 if __name__ == '__main__':
