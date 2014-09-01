@@ -62,7 +62,7 @@ def get_index_epoch(index_timestamp, separator='.'):
     return time.mktime([int(part) for part in year_month_day_optionalhour] + [0,0,0,0,0])
 
 
-def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr, changes_only):
+def find_expired_indices(connection, changes_only, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr):
     """ Generator that yields expired indices.
 
     :return: Yields tuples on the format ``(index_name, expired_by)`` where index_name
@@ -131,7 +131,8 @@ def main():
 
     print ''
 
-    for index_name, expired_by in find_expired_indices(connection, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix, arguments.changes):
+    for index_name, expired_by in find_expired_indices(connection, arguments.changes, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix):
+
         expiration = timedelta(seconds=expired_by)
 
         if arguments.dry_run:
