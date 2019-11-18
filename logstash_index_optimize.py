@@ -72,7 +72,7 @@ def find_indices_to_optimize(connection, days_to_optimize=None, hours_to_optimiz
     days_cutoff = utc_now_time - days_to_optimize * 24 * 60 * 60 if days_to_optimize is not None else None
     hours_cutoff = utc_now_time - hours_to_optimize * 60 * 60 if hours_to_optimize is not None else None
 
-    for index_name in sorted(set(connection.get_indices().keys())):
+    for index_name in sorted(set(connection.indices.get_indices().keys())):
         if not index_name.startswith(prefix):
             print >> out, 'Skipping index due to missing prefix {0}: {1}'.format(prefix, index_name)
             continue
@@ -138,7 +138,7 @@ def main():
 
         print 'Optimizing index {0} because it is {1} newer than cutoff.'.format(index_name, abs(expiration))
 
-        optimization = connection.optimize(index_name)
+        optimization = connection.indices.optimize(index_name)
         # ES returns a dict on the format {u'acknowledged': True, u'ok': True} on success.
         if optimization.get('ok'):
             print 'Successfully optimized index: {0}'.format(index_name)

@@ -42,6 +42,7 @@ def make_parser():
 
     parser.add_argument('-H', '--hours-to-keep', action='store', help='Number of hours to keep.', type=int)
     parser.add_argument('-d', '--days-to-keep', action='store', help='Number of days to keep.', type=int)
+    parser.add_argument('-c', '--changes-only', action='store_true', help='If true, output only changes(or attempted).', default=False)
 
     parser.add_argument('-n', '--dry-run', action='store_true', help='If true, does not perform any changes to the Elasticsearch indices.', default=False)
 
@@ -61,7 +62,7 @@ def get_index_epoch(index_timestamp, separator='.'):
     return time.mktime([int(part) for part in year_month_day_optionalhour] + [0,0,0,0,0])
 
 
-def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr):
+def find_expired_indices(connection, changes_only, days_to_keep=None, hours_to_keep=None, separator='.', prefix='logstash-', out=sys.stdout, err=sys.stderr,):
     """ Generator that yields expired indices.
 
     :return: Yields tuples on the format ``(index_name, expired_by)`` where index_name
@@ -72,10 +73,11 @@ def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, sepa
     days_cutoff = utc_now_time - days_to_keep * 24 * 60 * 60 if days_to_keep is not None else None
     hours_cutoff = utc_now_time - hours_to_keep * 60 * 60 if hours_to_keep is not None else None
 
-    for index_name in sorted(set(connection.get_indices().keys())):
+    for index_name in sorted(set(connection.indices.get_indices().keys())):
         if not index_name.startswith(prefix):
-            print >> out, 'Skipping index due to missing prefix {0}: {1}'.format(prefix, index_name)
-            continue
+            if not changes_only:
+                print >> out, 'Skipping index due to missing prefix {0}: {1}'.format(prefix, index_name)
+                continue
 
         unprefixed_index_name = index_name[len(prefix):]
 
@@ -105,7 +107,7 @@ def find_expired_indices(connection, days_to_keep=None, hours_to_keep=None, sepa
         if index_epoch < cutoff:
             yield index_name, cutoff-index_epoch
 
-        else:
+        elif not changes_only:
             print >> out, '{0} is {1} above the cutoff.'.format(index_name, timedelta(seconds=index_epoch-cutoff))
 
 
@@ -122,14 +124,15 @@ def main():
 
     connection = pyes.ES('{0}:{1}'.format(arguments.host, arguments.port), timeout=arguments.timeout)
 
-    if arguments.days_to_keep:
-        print 'Deleting daily indices older than {0} days.'.format(arguments.days_to_keep)
-    if arguments.hours_to_keep:
-        print 'Deleting hourly indices older than {0} hours.'.format(arguments.hours_to_keep)
+    if not arguments.changes_only: 
+        if arguments.days_to_keep:
+            print 'Deleting daily indices older than {0} days.'.format(arguments.days_to_keep)
+        if arguments.hours_to_keep:
+            print 'Deleting hourly indices older than {0} hours.'.format(arguments.hours_to_keep)
+        print ''
 
-    print ''
 
-    for index_name, expired_by in find_expired_indices(connection, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix):
+    for index_name, expired_by in find_expired_indices(connection, arguments.changes_only, arguments.days_to_keep, arguments.hours_to_keep, arguments.separator, arguments.prefix):
         expiration = timedelta(seconds=expired_by)
 
         if arguments.dry_run:
@@ -138,15 +141,16 @@ def main():
 
         print 'Deleting index {0} because it was {1} older than cutoff.'.format(index_name, expiration)
 
-        deletion = connection.delete_index_if_exists(index_name)
+        deletion = connection.indices.delete_index_if_exists(index_name)
         # ES returns a dict on the format {u'acknowledged': True, u'ok': True} on success.
         if deletion.get('ok'):
             print 'Successfully deleted index: {0}'.format(index_name)
         else:
             print 'Error deleting index: {0}. ({1})'.format(index_name, deletion)
 
-    print ''
-    print 'Done in {0}.'.format(timedelta(seconds=time.time()-start))
+    if not arguments.changes_only: 
+        print ''
+        print 'Done in {0}.'.format(timedelta(seconds=time.time()-start))
 
 
 if __name__ == '__main__':
