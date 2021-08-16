@@ -1,6 +1,10 @@
 logstash-elasticsearch-scripts
 ==============================
 
+:warning: Deprecated, use [curator](https://github.com/elastic/curator) instead.
+
+---
+
 Management scripts for Logstash over ES
 
  * logstash_index_optimize.py : Optimizing logstash indexes newer than n days.
